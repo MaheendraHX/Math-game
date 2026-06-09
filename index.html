@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Game</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; text-align: center; padding: 20px; color: #e2e8f0; }
+        .card { background: #1e293b; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h1 { color: #38bdf8; margin-bottom: 20px; }
+        .question { font-size: 38px; font-weight: bold; margin: 20px 0; color: #38bdf8; background: #0f172a; padding: 20px; border-radius: 10px; border: 2px solid #334155; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 12px 24px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.2s; }
+        button:hover { background: #7dd3fc; }
+        #camera-wrapper { position: relative; width: 480px; height: 360px; margin: 20px auto; border-radius: 10px; border: 4px solid #334155; overflow: hidden; background: #000; }
+        video, canvas { position: absolute; top: 0; left: 0; width: 480px; height: 360px; transform: scaleX(-1); }
+        
+        #result-box { font-size: 20px; font-weight: 600; margin-top: 25px; padding: 20px; border-radius: 12px; background: #0f172a; border: 2px solid #334155; color: #94a3b8; }
+        .correct { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; }
+        .incorrect { background: #7f1d1d !important; border-color: #ef4444 !important; color: #fecaca !important; }
+        
+        footer { margin-top: 30px; padding-top: 15px; color: #38bdf8; font-size: 1em; font-weight: bold; letter-spacing: 0.5px; border-top: 1px solid #334155; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Math Game</h1>
+    <div class="question" id="math-question">Loading...</div>
+    
+    <button type="button" onclick="generateQuestion()">Next Question ➡️</button>
+    
+    <div id="camera-wrapper">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+    </div>
+    
+    <div id="result-box">Waiting for camera...</div>
+    <footer>Hand-tracked by Maheendra</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    const videoElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const resultBox = document.getElementById('result-box');
+    let correctAnswer;
+
+    function generateQuestion() {
+        let num1 = Math.floor(Math.random() * 6);
+        let num2 = Math.floor(Math.random() * 6);
+        let ops = ['+', '-', '*'];
+        let op = ops[Math.floor(Math.random() * ops.length)];
+        
+        if (op === '+') correctAnswer = num1 + num2;
+        else if (op === '-') correctAnswer = num1 - num2;
+        else correctAnswer = num1 * num2;
+
+        if (correctAnswer < 0) return generateQuestion();
+
+        let symbol = op === '*' ? '×' : op;
+        document.getElementById("math-question").innerText = `What is ${num1} ${symbol} ${num2}?`;
+        resultBox.innerText = "Show your hand to the camera!";
+        resultBox.className = "";
+    }
+
+    function onResults(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        let count = 0;
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            for (const lm of results.multiHandLandmarks) {
+                canvasCtx.fillStyle = '#38bdf8';
+                lm.forEach(p => {
+                    canvasCtx.beginPath();
+                    canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 5, 0, 2 * Math.PI);
+                    canvasCtx.fill();
+                });
+                if (lm[8].y < lm[6].y) count++;
+                if (lm[12].y < lm[10].y) count++;
+                if (lm[16].y < lm[14].y) count++;
+                if (lm[20].y < lm[18].y) count++;
+                const isLeft = results.multiHandedness[results.multiHandLandmarks.indexOf(lm)].label === 'Left';
+                if (isLeft ? lm[4].x > lm[2].x : lm[4].x < lm[2].x) count++;
+            }
+            if (count === correctAnswer) {
+                resultBox.innerText = `CORRECT! You showed ${count}`;
+                resultBox.className = "correct";
+            } else {
+                resultBox.innerText = `Scanning... You showed ${count}`;
+                resultBox.className = "incorrect";
+            }
+        } else {
+            resultBox.innerText = "Show your hand clearly!";
+            resultBox.className = "";
+        }
+    }
+
+    const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
+    hands.onResults(onResults);
+    const camera = new Camera(videoElement, { onFrame: async () => { await hands.send({ image: videoElement }); }, width: 480, height: 360 });
+    camera.start();
+    generateQuestion();
+</script>
+</body>
+</html>
