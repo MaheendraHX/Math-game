@@ -5,38 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Game</title>
     <style>
+        /* Step 3: Implemented Black & Red Theme */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f172a;
+            background: #000000;
             text-align: center;
             padding: 20px;
-            color: #e2e8f0;
+            color: #ff3333;
         }
         .card {
-            background: #1e293b;
+            background: #121212;
             max-width: 600px;
             margin: 0 auto;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.15);
+            border: 1px solid #330000;
         }
         h1 {
-            color: #38bdf8;
+            color: #ff3333;
             margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
         }
         .question {
             font-size: 38px;
             font-weight: bold;
             margin: 20px 0;
-            color: #38bdf8;
-            background: #0f172a;
+            color: #ff3333;
+            background: #000000;
             padding: 20px;
             border-radius: 10px;
-            border: 2px solid #334155;
+            border: 2px solid #ff3333;
+            text-shadow: 0 0 5px rgba(255, 51, 51, 0.2);
         }
         button {
-            background: #38bdf8;
-            color: #0f172a;
+            background: #ff3333;
+            color: #000000;
             border: none;
             padding: 12px 24px;
             font-size: 18px;
@@ -47,7 +51,8 @@
             transition: 0.2s;
         }
         button:hover {
-            background: #7dd3fc;
+            background: #ff6666;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
         }
         #camera-wrapper {
             position: relative;
@@ -55,9 +60,10 @@
             height: 360px;
             margin: 20px auto;
             border-radius: 10px;
-            border: 4px solid #334155;
+            border: 4px solid #ff3333;
             overflow: hidden;
             background: #000;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
         }
         video, canvas {
             position: absolute;
@@ -73,28 +79,29 @@
             margin-top: 25px;
             padding: 20px;
             border-radius: 12px;
-            background: #0f172a;
-            border: 2px solid #334155;
-            color: #94a3b8;
+            background: #000000;
+            border: 2px solid #ff3333;
+            color: #ff9999;
         }
         .correct {
-            background: #064e3b !important;
-            border-color: #10b981 !important;
-            color: #34d399 !important;
+            background: #2a0000 !important;
+            border-color: #ff3333 !important;
+            color: #ff3333 !important;
+            box-shadow: inset 0 0 15px rgba(255, 51, 51, 0.5);
         }
         .incorrect {
-            background: #7f1d1d !important;
-            border-color: #ef4444 !important;
-            color: #fecaca !important;
+            background: #1a0000 !important;
+            border-color: #990000 !important;
+            color: #ff6666 !important;
         }
         footer {
             margin-top: 30px;
             padding-top: 15px;
-            color: #38bdf8;
+            color: #ff3333;
             font-size: 1em;
             font-weight: bold;
             letter-spacing: 0.5px;
-            border-top: 1px solid #334155;
+            border-top: 1px solid #330000;
         }
     </style>
 </head>
@@ -158,8 +165,8 @@
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 for (const lm of results.multiHandLandmarks) {
                     
-                    // Draw the hand points
-                    canvasCtx.fillStyle = '#38bdf8';
+                    // Step 3 Update: Turned the hand points red to match theme!
+                    canvasCtx.fillStyle = '#ff3333';
                     lm.forEach(p => {
                         canvasCtx.beginPath();
                         canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 5, 0, 2 * Math.PI);
