@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Game</title>
     <style>
-        /* Step 3 Tweaked: Dark Red Backgrounds & White Text */
+        /* Dark Red Backgrounds & White Text Theme */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #1a0000;
@@ -131,8 +131,8 @@
         const resultBox = document.getElementById('result-box');
 
         let correctAnswer;
+        let questionSolved = false; // Step 4: Tracking if the user solved it
 
-        // Step 1: Math Capped at 10 logic retained
         function generateQuestion() {
             let num1 = Math.floor(Math.random() * 6);
             let num2 = Math.floor(Math.random() * 6);
@@ -148,6 +148,8 @@
             let symbol = op === '*' ? '×' : op;
             document.getElementById("math-question").innerText = `What is ${num1} ${symbol} ${num2}?`;
             
+            // Reset state for the brand new question
+            questionSolved = false; 
             resultBox.innerText = "Show your hand to the camera!";
             resultBox.className = ""; 
         }
@@ -157,12 +159,25 @@
             canvasElement.height = videoElement.videoHeight;
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
+            // Step 4: If they already solved it, keep drawing hand lines but don't clear the success box!
+            if (questionSolved) {
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    for (const lm of results.multiHandLandmarks) {
+                        canvasCtx.fillStyle = '#ffffff';
+                        lm.forEach(p => {
+                            canvasCtx.beginPath();
+                            canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 5, 0, 2 * Math.PI);
+                            canvasCtx.fill();
+                        });
+                    }
+                }
+                return; 
+            }
+
             let count = 0;
 
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 for (const lm of results.multiHandLandmarks) {
-                    
-                    // Hand points turned to white to pop against dark red canvas overlay
                     canvasCtx.fillStyle = '#ffffff';
                     lm.forEach(p => {
                         canvasCtx.beginPath();
@@ -171,19 +186,20 @@
                     });
 
                     // Count fingers
-                    if (lm[8].y < lm[6].y) count++;   // Index
-                    if (lm[12].y < lm[10].y) count++;  // Middle
-                    if (lm[16].y < lm[14].y) count++;  // Ring
-                    if (lm[20].y < lm[18].y) count++;  // Pinky
+                    if (lm[8].y < lm[6].y) count++;   
+                    if (lm[12].y < lm[10].y) count++;  
+                    if (lm[16].y < lm[14].y) count++;  
+                    if (lm[20].y < lm[18].y) count++;  
 
                     const isLeft = results.multiHandedness[results.multiHandLandmarks.indexOf(lm)].label === 'Left';
-                    if (isLeft ? lm[4].x > lm[2].x : lm[4].x < lm[2].x) count++; // Thumb
+                    if (isLeft ? lm[4].x > lm[2].x : lm[4].x < lm[2].x) count++; 
                 }
 
                 // Check the answer
                 if (count === correctAnswer) {
                     resultBox.innerText = `CORRECT! You showed ${count}`;
                     resultBox.className = "correct";
+                    questionSolved = true; // Freeze it right here!
                 } else {
                     resultBox.innerText = `Scanning... You showed ${count}`;
                     resultBox.className = "incorrect";
