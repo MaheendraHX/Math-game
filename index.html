@@ -3,346 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Game</title>
-    <style>
-        /* Dark Red Backgrounds & White Text Theme */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a0000;
-            text-align: center;
-            padding: 20px;
-            color: #ffffff;
-        }
-        .card {
-            background: #330000;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-            border: 1px solid #550000;
-        }
-        h1 {
-            color: #ffffff;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Fancy Scoreboard Styling */
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            margin: 15px 0 25px 0;
-            gap: 12px;
-        }
-        .stat-box {
-            background: #1a0000;
-            border: 2px solid #550000;
-            padding: 12px;
-            border-radius: 10px;
-            flex: 1;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-            transition: 0.3s;
-        }
-        .stat-box.total-box { border-color: #cccccc; }
-        .stat-box.correct-box { border-color: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.1); }
-        .stat-box.wrong-box { border-color: #f87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.1); }
-        
-        .stat-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #ffcccc;
-            margin-bottom: 4px;
-            font-weight: bold;
-        }
-        .stat-value {
-            font-size: 26px;
-            font-weight: 800;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        .question {
-            font-size: 38px;
-            font-weight: bold;
-            margin: 20px 0;
-            color: #ffffff;
-            background: #1a0000;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #cc0000;
-        }
-        button {
-            background: #ffffff;
-            color: #330000;
-            border: none;
-            padding: 12px 24px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 5px;
-            transition: 0.2s;
-        }
-        button:hover {
-            background: #ffcccc;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-        }
-        #camera-wrapper {
-            position: relative;
-            width: 480px;
-            height: 360px;
-            margin: 20px auto;
-            border-radius: 10px;
-            border: 4px solid #cc0000;
-            overflow: hidden;
-            background: #000;
-        }
-        video, canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 480px;
-            height: 360px;
-            transform: scaleX(-1);
-        }
-        #result-box {
-            font-size: 20px;
-            font-weight: 600;
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 12px;
-            background: #1a0000;
-            border: 2px solid #cc0000;
-            color: #ffffff;
-        }
-        .correct {
-            background: #1e4620 !important; 
-            border-color: #4ade80 !important;
-            color: #ffffff !important;
-        }
-        .incorrect {
-            background: #5c1d1d !important;
-            border-color: #f87171 !important;
-            color: #ffffff !important;
-        }
-        footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            color: #ffffff;
-            font-size: 1em;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            border-top: 1px solid #550000;
-        }
-    </style>
+    <title>GestureMath.io - Interactive Hand Tracking Math Game</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="card">
-        
-        <div id="start-screen">
-            <h1>AI Math Game</h1>
-            <p style="font-size: 18px; margin: 25px 0; color: #ffcccc; line-height: 1.6;">
-                Welcome! Answer math problems in real-time by showing the correct number of fingers to your webcam.
-            </p>
-            <button type="button" style="font-size: 22px; padding: 15px 35px;" onclick="startGame()">Start Game 🎮</button>
-            <footer style="margin-top: 40px;">A Collaborative Project by Maheendra, Issac, Biya, and Navya</footer>
-        </div>
+    <div class="max-score-badge">
+        🏆 Max Streak: <span id="max-streak">0</span>
+    </div>
 
-        <div id="game-screen" style="display: none;">
-            <h1>Math Game</h1>
+    <div id="welcome-screen" class="modal-overlay">
+        <div class="welcome-card">
+            <h1>🖐️ GestureMath.io 🧮</h1>
+            <p class="welcome-intro">Welcome to an interactive math experience powered by real-time hand gesture recognition!</p>
             
-            <div class="stats-container">
-                <div class="stat-box total-box">
-                    <div class="stat-label">Total 📋</div>
-                    <div id="stat-total" class="stat-value" style="color: #ffffff;">0</div>
+            <div class="instructions-box">
+                <h3>Rules of the Game:</h3>
+                <ul>
+                    <li>A random equation appears on the left panel.</li>
+                    <li>You have a maximum of **4 seconds** to solve it.</li>
+                    <li>**Instant Capture:** The very moment you show the correct answer, the game locks it in automatically and records your time!</li>
+                    <li>If the timer hits 0.0s before you show the correct count, your streak resets.</li>
+                </ul>
+            </div>
+            
+            <button type="button" class="start-btn" onclick="startGame()">Start Game 🎮</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        
+        <div class="panel left-panel">
+            <header>
+                <h1>GestureMath<span>.io</span></h1>
+                <p class="subtitle">Solve with your hands</p>
+            </header>
+            
+            <div class="question" id="math-question">Loading...</div>
+            
+            <div class="stats-dashboard">
+                <div class="stat-item row-score">
+                    <span class="stat-label">🔥 Current Streak:</span>
+                    <span class="stat-value" id="current-streak">0</span>
                 </div>
-                <div class="stat-box correct-box">
-                    <div class="stat-label">Correct ✅</div>
-                    <div id="stat-correct" class="stat-value" style="color: #4ade80;">0</div>
+                <div class="stat-item">
+                    <span class="stat-label">⚡ Fastest Time:</span>
+                    <span class="stat-value" id="min-time">--</span>
                 </div>
-                <div class="stat-box wrong-box">
-                    <div class="stat-label">Wrong ❌</div>
-                    <div id="stat-wrong" class="stat-value" style="color: #f87171;">0</div>
+                <div class="stat-item">
+                    <span class="stat-label">📊 Average Time:</span>
+                    <span class="stat-value" id="avg-time">--</span>
                 </div>
             </div>
 
-            <div class="question" id="math-question">Loading...</div>
-            
-            <button type="button" onclick="nextQuestion()">Next Question ➡️</button>
+            <button type="button" class="next-btn" id="next-btn" onclick="generateQuestion()" disabled>Next Question ➡️</button>
+        </div>
 
+        <div class="panel right-panel">
             <div id="camera-wrapper">
                 <video id="webcam" autoplay playsinline></video>
                 <canvas id="output_canvas"></canvas>
+                <div id="timer-overlay" class="hidden">4.0s</div>
             </div>
 
-            <div id="result-box">Waiting for camera...</div>
-
-            <footer>A Collaborative Project by Maheendra, Issac, Biya, and Navya</footer>
+            <div id="result-box">Get Ready...</div>
         </div>
 
     </div>
 
+    <footer>
+        <p>© 2026 Powered by GestureMath.io. All Rights Reserved.</p>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-
-    <script type="text/javascript">
-        const videoElement = document.getElementById('webcam');
-        const canvasElement = document.getElementById('output_canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const resultBox = document.getElementById('result-box');
-
-        let correctAnswer;
-        let questionSolved = false;
-        let cameraInitialized = false;
-        let camera = null;
-
-        // Scoreboard State Variables
-        let totalQuestions = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let hasCountedWrongForThisQuestion = false;
-
-        function updateScoreboardUI() {
-            document.getElementById('stat-total').innerText = totalQuestions;
-            document.getElementById('stat-correct').innerText = correctCount;
-            document.getElementById('stat-wrong').innerText = wrongCount;
-        }
-
-        function startGame() {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            
-            if (!cameraInitialized) {
-                camera = new Camera(videoElement, {
-                    onFrame: async () => {
-                        await hands.send({ image: videoElement });
-                    },
-                    width: 480,
-                    height: 360
-                });
-                camera.start();
-                cameraInitialized = true;
-            }
-            
-            totalQuestions = 1;
-            updateScoreboardUI();
-            generateQuestion();
-        }
-
-        function nextQuestion() {
-            // If they skip manually without solving or getting flagged wrong, it still accounts a miss
-            if (!questionSolved && !hasCountedWrongForThisQuestion) {
-                wrongCount++;
-            }
-            totalQuestions++;
-            updateScoreboardUI();
-            generateQuestion();
-        }
-
-        function generateQuestion() {
-            let num1 = Math.floor(Math.random() * 6);
-            let num2 = Math.floor(Math.random() * 6);
-            let ops = ['+', '-', '*'];
-            let op = ops[Math.floor(Math.random() * ops.length)];
-
-            if (op === '+') correctAnswer = num1 + num2;
-            else if (op === '-') correctAnswer = num1 - num2;
-            else correctAnswer = num1 * num2;
-
-            if (correctAnswer < 0 || correctAnswer > 10) return generateQuestion();
-
-            let symbol = op === '*' ? '×' : op;
-            document.getElementById("math-question").innerText = `What is ${num1} ${symbol} ${num2}?`;
-            
-            // Reset state parameters completely
-            questionSolved = false; 
-            hasCountedWrongForThisQuestion = false;
-
-            resultBox.innerText = "Show your hand to the camera!";
-            resultBox.className = ""; 
-        }
-
-        function onResults(results) {
-            canvasElement.width = videoElement.videoWidth;
-            canvasElement.height = videoElement.videoHeight;
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
-            if (questionSolved) {
-                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    for (const lm of results.multiHandLandmarks) {
-                        canvasCtx.fillStyle = '#ffffff';
-                        lm.forEach(p => {
-                            canvasCtx.beginPath();
-                            canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 5, 0, 2 * Math.PI);
-                            canvasCtx.fill();
-                        });
-                    }
-                }
-                return; 
-            }
-
-            let count = 0;
-
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                for (const lm of results.multiHandLandmarks) {
-                    canvasCtx.fillStyle = '#ffffff';
-                    lm.forEach(p => {
-                        canvasCtx.beginPath();
-                        canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 5, 0, 2 * Math.PI);
-                        canvasCtx.fill();
-                    });
-
-                    // Count fingers
-                    if (lm[8].y < lm[6].y) count++;   
-                    if (lm[12].y < lm[10].y) count++;  
-                    if (lm[16].y < lm[14].y) count++;  
-                    if (lm[20].y < lm[18].y) count++;  
-
-                    const isLeft = results.multiHandedness[results.multiHandLandmarks.indexOf(lm)].label === 'Left';
-                    if (isLeft ? lm[4].x > lm[2].x : lm[4].x < lm[2].x) count++; 
-                }
-
-                // Check the answer
-                if (count === correctAnswer) {
-                    resultBox.innerText = `CORRECT! You showed ${count}`;
-                    resultBox.className = "correct";
-                    
-                    if (!questionSolved) {
-                        correctCount++;
-                        updateScoreboardUI();
-                    }
-                    questionSolved = true; 
-                } else {
-                    resultBox.innerText = `WRONG! You showed ${count}`;
-                    resultBox.className = "incorrect";
-
-                    // INSTANT WRONG ALLOCATION LOGIC
-                    if (!hasCountedWrongForThisQuestion) {
-                        wrongCount++;
-                        updateScoreboardUI();
-                        hasCountedWrongForThisQuestion = true; 
-                    }
-                }
-            } else {
-                resultBox.innerText = "Show your hand clearly!";
-                resultBox.className = "";
-            }
-        }
-
-        const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-        });
-
-        hands.setOptions({
-            maxNumHands: 2,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.7,
-            minTrackingConfidence: 0.7
-        });
-
-        hands.onResults(onResults);
-    </script>
+    <script src="script.js" defer></script>
 </body>
 </html>
