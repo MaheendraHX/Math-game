@@ -105,20 +105,33 @@
 <body>
 
     <div class="card">
-        <h1>Math Game</h1>
         
-        <div class="question" id="math-question">Loading...</div>
-        
-        <button type="button" onclick="generateQuestion()">Next Question ➡️</button>
-
-        <div id="camera-wrapper">
-            <video id="webcam" autoplay playsinline></video>
-            <canvas id="output_canvas"></canvas>
+        <div id="start-screen">
+            <h1>AI Math Game</h1>
+            <p style="font-size: 18px; margin: 25px 0; color: #ffcccc; line-height: 1.6;">
+                Welcome! Answer math problems in real-time by showing the correct number of fingers to your webcam.
+            </p>
+            <button type="button" style="font-size: 22px; padding: 15px 35px;" onclick="startGame()">Start Game 🎮</button>
+            <footer style="margin-top: 40px;">A Collaborative Project by Maheendra, Issac, Biya, and Navya</footer>
         </div>
 
-        <div id="result-box">Waiting for camera...</div>
+        <div id="game-screen" style="display: none;">
+            <h1>Math Game</h1>
+            
+            <div class="question" id="math-question">Loading...</div>
+            
+            <button type="button" onclick="generateQuestion()">Next Question ➡️</button>
 
-        <footer>A Collaborative Project by Maheendra, Issac, Biya, and Navya</footer>
+            <div id="camera-wrapper">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="output_canvas"></canvas>
+            </div>
+
+            <div id="result-box">Waiting for camera...</div>
+
+            <footer>A Collaborative Project by Maheendra, Issac, Biya, and Navya</footer>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -131,7 +144,32 @@
         const resultBox = document.getElementById('result-box');
 
         let correctAnswer;
-        let questionSolved = false; // Step 4: Tracking if the user solved it
+        let questionSolved = false;
+        let cameraInitialized = false;
+        let camera = null;
+
+        // SAFE TIMING START FUNCTION
+        function startGame() {
+            // 1. Reveal the game arena layers first so they have real width/height values
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            
+            // 2. Fire up the camera now that elements are fully visible
+            if (!cameraInitialized) {
+                camera = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await hands.send({ image: videoElement });
+                    },
+                    width: 480,
+                    height: 360
+                });
+                camera.start();
+                cameraInitialized = true;
+            }
+            
+            // 3. Generate the first math equation
+            generateQuestion();
+        }
 
         function generateQuestion() {
             let num1 = Math.floor(Math.random() * 6);
@@ -148,7 +186,6 @@
             let symbol = op === '*' ? '×' : op;
             document.getElementById("math-question").innerText = `What is ${num1} ${symbol} ${num2}?`;
             
-            // Reset state for the brand new question
             questionSolved = false; 
             resultBox.innerText = "Show your hand to the camera!";
             resultBox.className = ""; 
@@ -159,7 +196,6 @@
             canvasElement.height = videoElement.videoHeight;
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-            // Step 4: If they already solved it, keep drawing hand lines but don't clear the success box!
             if (questionSolved) {
                 if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                     for (const lm of results.multiHandLandmarks) {
@@ -199,7 +235,7 @@
                 if (count === correctAnswer) {
                     resultBox.innerText = `CORRECT! You showed ${count}`;
                     resultBox.className = "correct";
-                    questionSolved = true; // Freeze it right here!
+                    questionSolved = true; 
                 } else {
                     resultBox.innerText = `Scanning... You showed ${count}`;
                     resultBox.className = "incorrect";
@@ -222,17 +258,6 @@
         });
 
         hands.onResults(onResults);
-
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await hands.send({ image: videoElement });
-            },
-            width: 480,
-            height: 360
-        });
-
-        camera.start();
-        generateQuestion();
     </script>
 </body>
 </html>
