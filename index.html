@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,7 +114,7 @@
 
         <div id="result-box">Waiting for camera...</div>
 
-        <footer>Hand-tracked by Maheendra</footer>
+        <footer>A Collaborative Project by Maheendra, Issac, Biya, and Navya</footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -129,7 +128,7 @@
 
         let correctAnswer;
 
-        // Step 1: Updated logic to cap the answer at 10
+        // Step 1: Math Capped at 10 logic retained
         function generateQuestion() {
             let num1 = Math.floor(Math.random() * 6);
             let num2 = Math.floor(Math.random() * 6);
@@ -140,7 +139,6 @@
             else if (op === '-') correctAnswer = num1 - num2;
             else correctAnswer = num1 * num2;
 
-            // If the answer is negative OR greater than 10, try again!
             if (correctAnswer < 0 || correctAnswer > 10) return generateQuestion();
 
             let symbol = op === '*' ? '×' : op;
