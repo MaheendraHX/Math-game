@@ -27,6 +27,41 @@
             margin-bottom: 20px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
         }
+
+        /* Fancy Scoreboard Styling */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0 25px 0;
+            gap: 12px;
+        }
+        .stat-box {
+            background: #1a0000;
+            border: 2px solid #550000;
+            padding: 12px;
+            border-radius: 10px;
+            flex: 1;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+        .stat-box.total-box { border-color: #cccccc; }
+        .stat-box.correct-box { border-color: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.1); }
+        .stat-box.wrong-box { border-color: #f87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.1); }
+        
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #ffcccc;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
         .question {
             font-size: 38px;
             font-weight: bold;
@@ -118,9 +153,24 @@
         <div id="game-screen" style="display: none;">
             <h1>Math Game</h1>
             
+            <div class="stats-container">
+                <div class="stat-box total-box">
+                    <div class="stat-label">Total 📋</div>
+                    <div id="stat-total" class="stat-value" style="color: #ffffff;">0</div>
+                </div>
+                <div class="stat-box correct-box">
+                    <div class="stat-label">Correct ✅</div>
+                    <div id="stat-correct" class="stat-value" style="color: #4ade80;">0</div>
+                </div>
+                <div class="stat-box wrong-box">
+                    <div class="stat-label">Wrong ❌</div>
+                    <div id="stat-wrong" class="stat-value" style="color: #f87171;">0</div>
+                </div>
+            </div>
+
             <div class="question" id="math-question">Loading...</div>
             
-            <button type="button" onclick="generateQuestion()">Next Question ➡️</button>
+            <button type="button" onclick="nextQuestion()">Next Question ➡️</button>
 
             <div id="camera-wrapper">
                 <video id="webcam" autoplay playsinline></video>
@@ -148,13 +198,21 @@
         let cameraInitialized = false;
         let camera = null;
 
-        // SAFE TIMING START FUNCTION
+        // Scoreboard State Variables
+        let totalQuestions = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        function updateScoreboardUI() {
+            document.getElementById('stat-total').innerText = totalQuestions;
+            document.getElementById('stat-correct').innerText = correctCount;
+            document.getElementById('stat-wrong').innerText = wrongCount;
+        }
+
         function startGame() {
-            // 1. Reveal the game arena layers first so they have real width/height values
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             
-            // 2. Fire up the camera now that elements are fully visible
             if (!cameraInitialized) {
                 camera = new Camera(videoElement, {
                     onFrame: async () => {
@@ -167,7 +225,19 @@
                 cameraInitialized = true;
             }
             
-            // 3. Generate the first math equation
+            // Start match data allocations
+            totalQuestions = 1;
+            updateScoreboardUI();
+            generateQuestion();
+        }
+
+        // Action Trigger for checking un-solved questions before rotating layout
+        function nextQuestion() {
+            if (!questionSolved) {
+                wrongCount++;
+            }
+            totalQuestions++;
+            updateScoreboardUI();
             generateQuestion();
         }
 
@@ -235,6 +305,12 @@
                 if (count === correctAnswer) {
                     resultBox.innerText = `CORRECT! You showed ${count}`;
                     resultBox.className = "correct";
+                    
+                    // Update scoreboard counts once safely per solution state
+                    if (!questionSolved) {
+                        correctCount++;
+                        updateScoreboardUI();
+                    }
                     questionSolved = true; 
                 } else {
                     resultBox.innerText = `Scanning... You showed ${count}`;
