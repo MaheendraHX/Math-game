@@ -203,6 +203,11 @@
         let correctCount = 0;
         let wrongCount = 0;
 
+        // Intelligent Wrong Answer Tracking Variables
+        let lastWrongCount = -1;
+        let wrongStableFrames = 0;
+        let hasCountedWrongForThisQuestion = false;
+
         function updateScoreboardUI() {
             document.getElementById('stat-total').innerText = totalQuestions;
             document.getElementById('stat-correct').innerText = correctCount;
@@ -225,15 +230,14 @@
                 cameraInitialized = true;
             }
             
-            // Start match data allocations
             totalQuestions = 1;
             updateScoreboardUI();
             generateQuestion();
         }
 
-        // Action Trigger for checking un-solved questions before rotating layout
         function nextQuestion() {
-            if (!questionSolved) {
+            // If they skip without getting it right, and haven't already logged a wrong answer penalty
+            if (!questionSolved && !hasCountedWrongForThisQuestion) {
                 wrongCount++;
             }
             totalQuestions++;
@@ -256,7 +260,12 @@
             let symbol = op === '*' ? '×' : op;
             document.getElementById("math-question").innerText = `What is ${num1} ${symbol} ${num2}?`;
             
+            // Reset all state tracking for the fresh question
             questionSolved = false; 
+            hasCountedWrongForThisQuestion = false;
+            lastWrongCount = -1;
+            wrongStableFrames = 0;
+
             resultBox.innerText = "Show your hand to the camera!";
             resultBox.className = ""; 
         }
@@ -306,19 +315,37 @@
                     resultBox.innerText = `CORRECT! You showed ${count}`;
                     resultBox.className = "correct";
                     
-                    // Update scoreboard counts once safely per solution state
                     if (!questionSolved) {
                         correctCount++;
                         updateScoreboardUI();
                     }
                     questionSolved = true; 
                 } else {
-                    resultBox.innerText = `Scanning... You showed ${count}`;
+                    // Update layout message text dynamically to explicitly state "WRONG!"
+                    resultBox.innerText = `WRONG! You showed ${count}`;
                     resultBox.className = "incorrect";
+
+                    // Scoreboard verification checks for sustained incorrect counts
+                    if (count > 0 && !hasCountedWrongForThisQuestion) {
+                        if (count === lastWrongCount) {
+                            wrongStableFrames++;
+                            if (wrongStableFrames >= 25) { // Held wrong answer stably for ~1 second
+                                wrongCount++;
+                                updateScoreboardUI();
+                                hasCountedWrongForThisQuestion = true; 
+                            }
+                        } else {
+                            lastWrongCount = count;
+                            wrongStableFrames = 0;
+                        }
+                    }
                 }
             } else {
                 resultBox.innerText = "Show your hand clearly!";
                 resultBox.className = "";
+                // Reset frame tracking if hand completely leaves screen
+                wrongStableFrames = 0;
+                lastWrongCount = -1;
             }
         }
 
