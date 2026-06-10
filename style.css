@@ -160,9 +160,39 @@ button:disabled {
     cursor: not-allowed;
     box-shadow: none;
 }
-.next-btn {
+
+/* New Stop Button styling replacing Next button styles */
+.stop-btn {
     align-self: center;
     width: 100%;
+    background: linear-gradient(135deg, #4a0308 0%, #290003 100%);
+    color: #ffb3b7;
+    border: 1px solid #8f1922;
+    padding: 15px 35px;
+    font-size: 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.25s ease;
+}
+.stop-btn:hover {
+    background: linear-gradient(135deg, #cc0a17 0%, #800008 100%);
+    box-shadow: 0 0 25px rgba(239, 68, 76, 0.5);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Personal Best Max Streak Card on Welcome page layout setup */
+.welcome-score-display {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px dashed #ffd700;
+    color: #ffd700;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
 }
 
 /* Camera Elements and Countdowns */

@@ -17,13 +17,17 @@
             <h1>🖐️ GestureMath.io 🧮</h1>
             <p class="welcome-intro">Welcome to an interactive math experience powered by real-time hand gesture recognition!</p>
             
+            <div class="welcome-score-display">
+                🏆 Personal Best Max Streak: <span id="welcome-max-streak">0</span>
+            </div>
+
             <div class="instructions-box">
                 <h3>Rules of the Game:</h3>
                 <ul>
                     <li>A random equation appears on the left panel.</li>
                     <li>You have a maximum of **4 seconds** to solve it.</li>
-                    <li>**Instant Capture:** The very moment you show the correct answer, the game locks it in automatically and records your time!</li>
-                    <li>If the timer hits 0.0s before you show the correct count, your streak resets.</li>
+                    <li>**Instant Capture:** The very moment you show the correct answer, the game locks it in automatically!</li>
+                    <li>The next question loads automatically with a 2-second delay.</li>
                 </ul>
             </div>
             
@@ -56,7 +60,7 @@
                 </div>
             </div>
 
-            <button type="button" class="next-btn" id="next-btn" onclick="generateQuestion()" disabled>Next Question ➡️</button>
+            <button type="button" class="stop-btn" id="stop-btn" onclick="stopGame()">Stop Playing 🛑</button>
         </div>
 
         <div class="panel right-panel">

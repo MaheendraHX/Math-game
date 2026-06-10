@@ -3,7 +3,6 @@ const canvasElement = document.getElementById('output_canvas');
 const canvasCtx = canvasElement.getContext('2d');
 const resultBox = document.getElementById('result-box');
 const timerOverlay = document.getElementById('timer-overlay');
-const nextBtn = document.getElementById('next-btn');
 
 // Performance Metrics Tracking Variables
 let correctAnswer;
@@ -16,6 +15,7 @@ let minTime = Infinity;
 // Timer Configuration Variables
 let timerDuration = 4.0; 
 let countdownInterval = null;
+let autoNextTimeout = null; 
 let isEvaluationLocked = false; 
 let questionStartTime = null;
 
@@ -28,7 +28,30 @@ function startGame() {
     }, 400);
 }
 
+// Automatically takes you to the welcome page and updates max streak
+function stopGame() {
+    clearInterval(countdownInterval);
+    clearTimeout(autoNextTimeout);
+    isEvaluationLocked = true;
+    
+    currentStreak = 0;
+    document.getElementById('current-streak').innerText = currentStreak;
+    timerOverlay.classList.add('hidden');
+    resultBox.innerText = "Get Ready...";
+    resultBox.className = "";
+    document.getElementById("math-question").innerText = "Loading...";
+
+    const welcomeScreen = document.getElementById('welcome-screen');
+    document.getElementById('welcome-max-streak').innerText = maxStreak;
+    welcomeScreen.style.display = 'flex';
+    setTimeout(() => {
+        welcomeScreen.style.opacity = '1';
+    }, 10);
+}
+
 function generateQuestion() {
+    clearTimeout(autoNextTimeout);
+
     let num1 = Math.floor(Math.random() * 6);
     let num2 = Math.floor(Math.random() * 6);
     let ops = ['+', '-', '*'];
@@ -43,16 +66,13 @@ function generateQuestion() {
     let symbol = op === '*' ? '×' : op;
     document.getElementById("math-question").innerText = `What is ${num1} ${symbol} ${num2}?`;
     
-    // Clear state profiles safely
     isEvaluationLocked = false;
     timerDuration = 4.0;
     clearInterval(countdownInterval);
     
-    nextBtn.disabled = true;
     resultBox.innerText = "Scanning fingers...";
     resultBox.className = ""; 
     
-    // Fire off absolute timer execution
     questionStartTime = performance.now();
     startAbsoluteTimer();
 }
@@ -66,7 +86,6 @@ function startAbsoluteTimer() {
         if (timerDuration <= 0) {
             clearInterval(countdownInterval);
             timerOverlay.classList.add('hidden');
-            // Timeout reached: Evaluate current state (will result in wrong/timeout penalty)
             evaluateAnswer(false, 4.0); 
         } else {
             timerOverlay.innerText = `${timerDuration.toFixed(1)}s`;
@@ -74,43 +93,43 @@ function startAbsoluteTimer() {
     }, 100);
 }
 
-// Handles calculations right when an answer triggers
 function evaluateAnswer(isCorrect, elapsedSeconds) {
     isEvaluationLocked = true;
-    clearInterval(countdownInterval); // Instantly stop the clock
+    clearInterval(countdownInterval); 
     timerOverlay.classList.add('hidden');
-    nextBtn.disabled = false; // Unlock next button control hook
 
     if (isCorrect) {
         currentStreak++;
         questionsAnsweredCount++;
         totalSolvedTime += elapsedSeconds;
 
-        // Check if this answer sets a new record for fastest speed
         if (elapsedSeconds < minTime) {
             minTime = elapsedSeconds;
             document.getElementById('min-time').innerText = `${minTime.toFixed(2)}s`;
         }
 
-        // Keep all-time high streak scoreboard records synchronized
         if (currentStreak > maxStreak) {
             maxStreak = currentStreak;
             document.getElementById('max-streak').innerText = maxStreak;
+            document.getElementById('welcome-max-streak').innerText = maxStreak;
         }
 
-        // Update live average metrics window
         document.getElementById('avg-time').innerText = `${(totalSolvedTime / questionsAnsweredCount).toFixed(2)}s`;
         
-        resultBox.innerText = `CORRECT! 🎉 Solved in exactly ${elapsedSeconds.toFixed(2)}s!`;
+        resultBox.innerText = `CORRECT! 🎉 Solved in ${elapsedSeconds.toFixed(2)}s! Next in 2s...`;
         resultBox.className = "correct";
     } else {
-        // Strike penalty routine handles failures or complete time timeouts
         currentStreak = 0;
-        resultBox.innerText = `TIMEOUT / WRONG! ❌ Correct answer was ${correctAnswer}.`;
+        resultBox.innerText = `TIMEOUT / WRONG! ❌ Answer was ${correctAnswer}. Next in 2s...`;
         resultBox.className = "incorrect";
     }
 
     document.getElementById('current-streak').innerText = currentStreak;
+
+    // Sets up automatic progression delay loop
+    autoNextTimeout = setTimeout(() => {
+        generateQuestion();
+    }, 2000);
 }
 
 function onResults(results) {
@@ -118,7 +137,6 @@ function onResults(results) {
     canvasElement.height = videoElement.videoHeight;
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-    // If answer is already captured or time expired, keep the screen static
     if (isEvaluationLocked) return;
 
     let count = 0;
@@ -144,8 +162,6 @@ function onResults(results) {
 
         resultBox.innerText = `Reading current gesture: ${count}`;
 
-        // INSTANT DETECTION TRIGGER RULE:
-        // The exact millisecond the count equals the correct answer, process it!
         if (count === correctAnswer) {
             const stopTime = performance.now();
             const elapsedSeconds = (stopTime - questionStartTime) / 1000;
