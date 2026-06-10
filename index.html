@@ -5,42 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Game</title>
     <style>
-        /* Step 3: Implemented Black & Red Theme */
+        /* Step 3 Tweaked: Dark Red Backgrounds & White Text */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #000000;
+            background: #1a0000;
             text-align: center;
             padding: 20px;
-            color: #ff3333;
+            color: #ffffff;
         }
         .card {
-            background: #121212;
+            background: #330000;
             max-width: 600px;
             margin: 0 auto;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.15);
-            border: 1px solid #330000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid #550000;
         }
         h1 {
-            color: #ff3333;
+            color: #ffffff;
             margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
         }
         .question {
             font-size: 38px;
             font-weight: bold;
             margin: 20px 0;
-            color: #ff3333;
-            background: #000000;
+            color: #ffffff;
+            background: #1a0000;
             padding: 20px;
             border-radius: 10px;
-            border: 2px solid #ff3333;
-            text-shadow: 0 0 5px rgba(255, 51, 51, 0.2);
+            border: 2px solid #cc0000;
         }
         button {
-            background: #ff3333;
-            color: #000000;
+            background: #ffffff;
+            color: #330000;
             border: none;
             padding: 12px 24px;
             font-size: 18px;
@@ -51,8 +50,8 @@
             transition: 0.2s;
         }
         button:hover {
-            background: #ff6666;
-            box-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
+            background: #ffcccc;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
         #camera-wrapper {
             position: relative;
@@ -60,10 +59,9 @@
             height: 360px;
             margin: 20px auto;
             border-radius: 10px;
-            border: 4px solid #ff3333;
+            border: 4px solid #cc0000;
             overflow: hidden;
             background: #000;
-            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
         }
         video, canvas {
             position: absolute;
@@ -79,29 +77,28 @@
             margin-top: 25px;
             padding: 20px;
             border-radius: 12px;
-            background: #000000;
-            border: 2px solid #ff3333;
-            color: #ff9999;
+            background: #1a0000;
+            border: 2px solid #cc0000;
+            color: #ffffff;
         }
         .correct {
-            background: #2a0000 !important;
-            border-color: #ff3333 !important;
-            color: #ff3333 !important;
-            box-shadow: inset 0 0 15px rgba(255, 51, 51, 0.5);
+            background: #1e4620 !important; 
+            border-color: #4ade80 !important;
+            color: #ffffff !important;
         }
         .incorrect {
-            background: #1a0000 !important;
-            border-color: #990000 !important;
-            color: #ff6666 !important;
+            background: #5c1d1d !important;
+            border-color: #f87171 !important;
+            color: #ffffff !important;
         }
         footer {
             margin-top: 30px;
             padding-top: 15px;
-            color: #ff3333;
+            color: #ffffff;
             font-size: 1em;
             font-weight: bold;
             letter-spacing: 0.5px;
-            border-top: 1px solid #330000;
+            border-top: 1px solid #550000;
         }
     </style>
 </head>
@@ -165,8 +162,8 @@
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 for (const lm of results.multiHandLandmarks) {
                     
-                    // Step 3 Update: Turned the hand points red to match theme!
-                    canvasCtx.fillStyle = '#ff3333';
+                    // Hand points turned to white to pop against dark red canvas overlay
+                    canvasCtx.fillStyle = '#ffffff';
                     lm.forEach(p => {
                         canvasCtx.beginPath();
                         canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 5, 0, 2 * Math.PI);
